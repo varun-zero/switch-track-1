@@ -1,0 +1,187 @@
+# ==============================================================================
+# SWITCH ROOM TEMPLATE: Critical Revenue Incident & Rollback Sentinel
+# Track 01: Best Business Workflow — Flip the Switch Hackathon
+# ==============================================================================
+apiVersion: switch.dev/v1alpha1
+kind: RoomTemplate
+metadata:
+  name: revenue-incident-rollback-sentinel
+  version: "2.4.0"
+  description: >
+    Autonomous multi-agent incident response room connecting Sentry/Datadog
+    telemetry, deterministic reproduction, and human-gated canary rollbacks
+    inside Mattermost, Slack, Discord, or Microsoft Teams via Switch.
+  labels:
+    track: "best-business-workflow"
+    voice_compatible: "wispr-flow"
+    tier: "tier-0-revenue"
+
+room:
+  name: "inc-checkout-500-sentinel"
+  topic: "Tier-0 Revenue Incident Room · Checkout API 500 Spike · Switch Agent Protocol"
+  bridge:
+    primary: "mattermost"
+    channel: "incident-war-room"
+    supported_adapters:
+      - mattermost
+      - slack
+      - discord
+      - msteams
+  rules:
+    - id: "RULE-01"
+      rule: "Blast radius summaries from ops-triager must never exceed 2 lines and must quantify revenue impact per minute."
+    - id: "RULE-02"
+      rule: "ops-repro must verify database connection pool state and produce a deterministic reproduction test before remediation is proposed."
+    - id: "RULE-03"
+      rule: "HARD GATE: ops-release is strictly prohibited from invoking deployment rollback webhooks without explicit human sign-off matching '@ops-release Approved. Roll back to <version>'."
+    - id: "RULE-04"
+      rule: "Voice / Wispr Flow Compatibility: All agents accept natural spoken phrases without punctuation sensitivity (e.g., 'ops release approved roll back to v2.13.2')."
+
+  state:
+    tasks:
+      - id: "TASK-101"
+        title: "Isolate offending commit and quantify revenue blast radius"
+        assignee: "ops-triager"
+        status: "pending"
+      - id: "TASK-102"
+        title: "Verify PostgreSQL pool health, inspect git diff, and execute isolated repro script"
+        assignee: "ops-repro"
+        status: "pending"
+      - id: "TASK-103"
+        title: "Stage canary rollback PR, compute risk score, and request human release approval"
+        assignee: "ops-release"
+        status: "pending"
+      - id: "TASK-104"
+        title: "Verify human sign-off and trigger production rollback webhook"
+        assignee: "ops-release"
+        status: "blocked_on_human"
+
+agents:
+  # ----------------------------------------------------------------------------
+  # 1. SENTRY / TRIAGER AGENT (ops-triager)
+  # ----------------------------------------------------------------------------
+  - id: "ops-triager"
+    displayName: "Ops Triager (Sentry/Datadog)"
+    role: "Incident Triage & Blast Radius Analyst"
+    provider:
+      runtime: "switch-agent-protocol"
+      transport: "sse+http"
+      sseEndpoint: "http://sentinel-agent-worker:3000/api/switch/stream?agent=ops-triager"
+      httpCallback: "http://sentinel-agent-worker:3000/api/switch/agent-webhook"
+      model: "claude-3-7-sonnet / gemini-2.5-pro"
+    addressing:
+      mode: "anyone"
+      triggers:
+        - "@ops-triager"
+        - "ops triager"
+        - "EVENT:SENTRY_ERROR_SPIKE"
+        - "triage checkout"
+    permissions:
+      roomStateRead: true
+      roomStateWrite:
+        - tasks
+        - decisions
+      toolsAllowed:
+        - "sentry.fetch_error_spike"
+        - "datadog.query_checkout_metrics"
+        - "git.resolve_deploy_commit"
+      toolsForbidden:
+        - "deploy.trigger_rollback"
+    systemPrompt: |
+      You are @ops-triager operating inside a Switch Incident Room.
+      When triggered by a Sentry/Datadog 500 spike or human command:
+      1. Parse the error telemetry payload and identify the exact endpoint, HTTP status, and exception trace.
+      2. Correlate the spike onset timestamp against recent production deployments to isolate the offending git commit SHA and release tag.
+      3. Post an ultra-dense 2-line blast radius summary quantifying error rate, affected regions, and $/min revenue loss, then hand off to @ops-repro.
+
+  # ----------------------------------------------------------------------------
+  # 2. DIAGNOSTIC / REPRODUCER AGENT (ops-repro)
+  # ----------------------------------------------------------------------------
+  - id: "ops-repro"
+    displayName: "Ops Reproducer (Diagnostics & Diff)"
+    role: "Root-Cause Diagnostics & Isolated Reproduction Engineer"
+    provider:
+      runtime: "switch-agent-protocol"
+      transport: "sse+http"
+      sseEndpoint: "http://sentinel-agent-worker:3000/api/switch/stream?agent=ops-repro"
+      httpCallback: "http://sentinel-agent-worker:3000/api/switch/agent-webhook"
+      model: "claude-3-7-sonnet / codex-agent"
+    addressing:
+      mode: "owner-agents"
+      allowedSenders:
+        - "ops-triager"
+        - "human-operator"
+      triggers:
+        - "@ops-repro"
+        - "ops repro"
+        - "verify diff"
+    permissions:
+      roomStateRead: true
+      roomStateWrite:
+        - tasks
+        - decisions
+      toolsAllowed:
+        - "k8s.fetch_deploy_manifest"
+        - "pg.check_connection_pool"
+        - "git.fetch_commit_diff"
+        - "sandbox.run_repro_script"
+      toolsForbidden:
+        - "deploy.trigger_rollback"
+    systemPrompt: |
+      You are @ops-repro operating inside a Switch Incident Room.
+      When handed an isolated commit from @ops-triager or addressed by a human:
+      1. Verify PostgreSQL connection pool health to rule out database saturation or lock contention.
+      2. Pull the git diff for the offending commit and pinpoint the exact line causing the runtime exception.
+      3. Generate and execute a minimal deterministic reproduction script in an isolated sandbox.
+      4. Post the git diff, DB pool metrics, and reproduction exit status to the room, then hand off to @ops-release.
+
+  # ----------------------------------------------------------------------------
+  # 3. REMEDIATION / RELEASE AGENT (ops-release)
+  # ----------------------------------------------------------------------------
+  - id: "ops-release"
+    displayName: "Ops Release (Canary & Rollback Gate)"
+    role: "Release Remediation & Human-Gated Rollback Controller"
+    provider:
+      runtime: "switch-agent-protocol"
+      transport: "sse+http"
+      sseEndpoint: "http://sentinel-agent-worker:3000/api/switch/stream?agent=ops-release"
+      httpCallback: "http://sentinel-agent-worker:3000/api/switch/agent-webhook"
+      model: "claude-3-7-sonnet / gemini-2.5-pro"
+    addressing:
+      mode: "anyone"
+      triggers:
+        - "@ops-release"
+        - "ops release"
+        - "approved"
+        - "roll back to"
+    permissions:
+      roomStateRead: true
+      roomStateWrite:
+        - tasks
+        - decisions
+      toolsAllowed:
+        - "github.prepare_rollback_pr"
+        - "release.calculate_rollback_risk"
+        - "deploy.trigger_rollback"
+      humanApprovalGate:
+        requiredFor:
+          - "deploy.trigger_rollback"
+        matchPattern: "(?i)(@?ops-release)?\\s*(approved|approve)[.,!\\s]*roll\\s*back\\s*to\\s*(v[0-9]+\\.[0-9]+\\.[0-9]+)"
+    systemPrompt: |
+      You are @ops-release operating inside a Switch Incident Room.
+      Phase 1 (Preparation): When @ops-repro confirms a deterministic reproduction:
+      - Prepare a canary rollback plan to the last known healthy release (v2.13.2) and a hotfix PR.
+      - Calculate the rollback risk score (evaluating schema migrations, stateful queues, and cache compatibility).
+      - Post the remediation plan and explicitly pause, requesting human sign-off:
+        "@ops-release Approved. Roll back to v2.13.2"
+      Phase 2 (Execution): ONLY after a verified human teammate message in the Switch room matches the approval gate:
+      - Record the human authorization in the Switch Room Decisions ledger.
+      - Trigger the production deployment rollback webhook, shift traffic 100% to v2.13.2, and confirm 500 error recovery.
+
+kickoff:
+  sender: "switch-system"
+  message: >
+    [SWITCH ROOM INITIALIZED] Revenue Incident & Rollback Sentinel active.
+    Listening for Sentry/Datadog error spikes on `POST /api/v2/checkout/confirm`.
+    Agents online: @ops-triager (anyone), @ops-repro (owner-agents), @ops-release (human-gated).
+    Dictate via Wispr Flow or type `@ops-triager Triage checkout 500 spike` to begin.

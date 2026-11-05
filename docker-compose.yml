@@ -1,0 +1,103 @@
+# ==============================================================================
+# DOCKER COMPOSE: Switch Core + Local Mattermost + Sentinel Agent Worker
+# Run with: docker compose up --build
+# ==============================================================================
+version: "3.9"
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. PostgreSQL for Local Mattermost Team Chat
+  # ----------------------------------------------------------------------------
+  mattermost-postgres:
+    image: postgres:15-alpine
+    container_name: sentinel-mattermost-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mmuser
+      POSTGRES_PASSWORD: mmuser_password
+      POSTGRES_DB: mattermost
+    volumes:
+      - mattermost_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mmuser -d mattermost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - switch-mesh
+
+  # ----------------------------------------------------------------------------
+  # 2. Local Mattermost Team Chat Server (No Enterprise Chat Admin Needed)
+  # ----------------------------------------------------------------------------
+  mattermost:
+    image: mattermost/mattermost-team-edition:9.11
+    container_name: sentinel-mattermost-chat
+    restart: unless-stopped
+    depends_on:
+      mattermost-postgres:
+        condition: service_healthy
+    ports:
+      - "8065:8065"
+    environment:
+      MM_SQLSETTINGS_DRIVERNAME: postgres
+      MM_SQLSETTINGS_DATASOURCE: postgres://mmuser:mmuser_password@mattermost-postgres:5432/mattermost?sslmode=disable&connect_timeout=10
+      MM_SERVICESETTINGS_SITEURL: http://localhost:8065
+      MM_SERVICESETTINGS_ENABLEBOTACCOUNTCREATION: "true"
+      MM_SERVICESETTINGS_ENABLEUSERACCESSTOKENS: "true"
+      MM_TEAMSETTINGS_ENABLEOPENSERVER: "true"
+    networks:
+      - switch-mesh
+
+  # ----------------------------------------------------------------------------
+  # 3. Switch Core Runtime (Room State Engine & SSE/HTTP Agent Broker)
+  # ----------------------------------------------------------------------------
+  switch-core:
+    image: ghcr.io/switch-dev/switch-core:latest
+    container_name: sentinel-switch-core
+    restart: unless-stopped
+    depends_on:
+      - mattermost
+    ports:
+      - "4100:4100"
+    environment:
+      SWITCH_PORT: "4100"
+      SWITCH_CHAT_ADAPTER: "mattermost"
+      SWITCH_MATTERMOST_URL: "http://mattermost:8065"
+      SWITCH_TEMPLATE_PATH: "/etc/switch/sentinel.template.yaml"
+      SWITCH_AGENT_WORKER_URL: "http://sentinel-agent-worker:3000"
+    volumes:
+      - ./sentinel.template.yaml:/etc/switch/sentinel.template.yaml:ro
+    networks:
+      - switch-mesh
+
+  # ----------------------------------------------------------------------------
+  # 4. Sentinel Multi-Agent Worker & Tactical Incident HUD
+  #    Implements Switch Agent Protocol (SSE In / HTTP Out) + Web HUD on :3000
+  # ----------------------------------------------------------------------------
+  sentinel-agent-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: node:22-alpine
+    container_name: sentinel-agent-worker
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: "3000"
+      SWITCH_CORE_URL: "http://switch-core:4100"
+      MATTERMOST_URL: "http://mattermost:8065"
+      SENTINEL_TEMPLATE_FILE: "/app/sentinel.template.yaml"
+    volumes:
+      - .:/app
+    networks:
+      - switch-mesh
+
+volumes:
+  mattermost_db_data:
+
+networks:
+  switch-mesh:
+    driver: bridge

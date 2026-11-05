@@ -1,0 +1,6 @@
+{
+  "name": "Sentinel — Switch Autonomous Incident & Rollback Workflow",
+  "description": "Autonomous multi-agent revenue incident triage, deterministic reproduction, and human-in-the-loop rollback workflow powered by the Switch Agent Protocol.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
