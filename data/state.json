@@ -1,6 +1,6 @@
 {
-  "approved": true,
-  "approvedAt": "2026-11-05T06:40:49.841Z",
+  "approved": false,
+  "approvedAt": null,
   "evidence": [
     {
       "id": "E1",
@@ -89,9 +89,9 @@
       "num": 5,
       "text": "Results from last year",
       "required": true,
-      "proof": "E4 Results file",
-      "status": "ok",
-      "statusText": "Done",
+      "proof": "E4 Results file, one number has no source",
+      "status": "gap",
+      "statusText": "Needs a fix",
       "evidenceKey": "E4"
     },
     {
@@ -119,9 +119,9 @@
       "num": 8,
       "text": "List of board members",
       "required": true,
-      "proof": "Board member roster attached",
-      "status": "ok",
-      "statusText": "Done",
+      "proof": "Not attached",
+      "status": "miss",
+      "statusText": "Missing",
       "evidenceKey": null
     }
   ],
@@ -178,22 +178,24 @@
   ],
   "overallScore": 78,
   "problems": [
+    "One claim about graduate pay has no source.",
+    "The board member list is not attached.",
     "Two spots still say GAP."
   ],
   "fixes": [
     {
       "id": "fix-pay-claim",
       "text": "I added a source for the graduate pay claim.",
-      "done": true
+      "done": false
     },
     {
       "id": "fix-board-list",
       "text": "I attached the board member list.",
-      "done": true
+      "done": false
     }
   ],
   "attachments": {
-    "board_members": true
+    "board_members": false
   },
   "decisionLog": [
     {
@@ -210,21 +212,6 @@
       "actor": "Reviewer agent",
       "action": "Scored the draft 78 out of 100. Found 2 problems.",
       "timestamp": "Nov 4, 11:05"
-    },
-    {
-      "actor": "You (Approver)",
-      "action": "Resolved fix: graduate pay claim source.",
-      "timestamp": "Nov 5, 12:10"
-    },
-    {
-      "actor": "You (Approver)",
-      "action": "Resolved fix: board member list attachment.",
-      "timestamp": "Nov 5, 12:10"
-    },
-    {
-      "actor": "You (Approver)",
-      "action": "Approved the application. Final file saved.",
-      "timestamp": "Nov 5, 12:10"
     }
   ]
 }

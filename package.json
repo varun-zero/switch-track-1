@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "switch:demo": "node scripts/switch-runner.mjs",
+    "switch:demo:fast": "node scripts/switch-runner.mjs --fast"
   },
   "dependencies": {
     "@next/swc-wasm-nodejs": "^15.5.29",

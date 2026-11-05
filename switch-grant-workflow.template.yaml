@@ -1,0 +1,207 @@
+# ==============================================================================
+# SWITCH ROOM TEMPLATE: Grant Application Review & Human Sign-off
+# Track 01: Best Business Workflow — Flip the Switch Hackathon
+# ==============================================================================
+apiVersion: switch.dev/v1alpha1
+kind: RoomTemplate
+metadata:
+  name: grant-application-signoff
+  version: "1.0.0"
+  description: >
+    Human-in-the-loop grant drafting, evidence validation, and compliance sign-off.
+    Coordinates client RFP intake, AI requirements extraction, cited drafting,
+    deterministic citation verification, and weighted scoring, with strict human approval gating.
+  labels:
+    track: "best-business-workflow"
+    domain: "grants-proposals-compliance"
+
+room:
+  name: "grant-room"
+  topic: "Grant Application Verification & Signoff · Switch Agent Protocol"
+  bridge:
+    primary: "slack"
+    channel: "grant-signoff"
+    supported_adapters:
+      - slack
+      - discord
+      - mattermost
+      - msteams
+  rules:
+    - id: "RULE-01"
+      rule: "Client talks to Analyst only. Direct instructions to other agents must route through Analyst."
+    - id: "RULE-02"
+      rule: "All drafted claims must cite a valid evidence ID [E#] or be marked with [GAP]."
+    - id: "RULE-03"
+      rule: "Deterministic Checker must verify all citations against the evidence index before scoring."
+    - id: "RULE-04"
+      rule: "HARD GATE: Only human approver can sign off. Approval is strictly rejected with HTTP 409 if any required fix is open."
+
+  state:
+    tasks:
+      - id: "TASK-01"
+        title: "Extract RFP requirements and applicant proof files into checklist"
+        assignee: "analyst-agent"
+        status: "completed"
+      - id: "TASK-02"
+        title: "Draft grant sections with evidence citations and explicit gap markers"
+        assignee: "drafter-agent"
+        status: "completed"
+      - id: "TASK-03"
+        title: "Execute deterministic citation & compliance audit (no LLM, 100% deterministic)"
+        assignee: "checker-tool"
+        status: "completed"
+      - id: "TASK-04"
+        title: "Score draft against 4-factor rubric (Need, Approach, Capacity, Budget)"
+        assignee: "reviewer-agent"
+        status: "completed"
+      - id: "TASK-05"
+        title: "Resolve open audit fixes and execute final human sign-off"
+        assignee: "human-approver"
+        status: "blocked_on_human"
+
+agents:
+  # ----------------------------------------------------------------------------
+  # 1. ANALYST AGENT (Analyst)
+  # ----------------------------------------------------------------------------
+  - id: "analyst-agent"
+    name: "Analyst"
+    role: "Requirements & RFP Specialist"
+    description: "Reads funder guidelines, applicant records, and generates the requirements checklist."
+    addressing:
+      mode: "anyone"
+      triggers:
+        - "@Analyst"
+        - "analyst"
+        - "grant rules"
+    provider:
+      runtime: "switch-agent-protocol"
+      transport: "sse+http"
+      sseEndpoint: "http://localhost:3000/api/stream"
+      httpCallback: "http://localhost:3000/api/agent/requirements"
+      model: "claude-3-7-sonnet / gpt-4o"
+    permissions:
+      roomStateRead: true
+      roomStateWrite:
+        - checklist
+        - decisions
+    instructions: |
+      You are @Analyst operating inside Switch `#grant-room`.
+      1. Receive grant guidelines and proof files from Maya (client).
+      2. Analyze eligibility, required attachments, and compliance rules.
+      3. Post structured requirements checklist to `POST /api/agent/requirements`.
+      4. Handoff to @Drafter once requirements are indexed.
+
+  # ----------------------------------------------------------------------------
+  # 2. DRAFTER AGENT (Drafter)
+  # ----------------------------------------------------------------------------
+  - id: "drafter-agent"
+    name: "Drafter"
+    role: "Evidence-Grounded Grant Drafter"
+    description: "Writes proposal sections citing verified evidence IDs [E#] and marking missing data with [GAP]."
+    addressing:
+      mode: "owner-agents"
+      allowedSenders:
+        - "analyst-agent"
+        - "human-approver"
+      triggers:
+        - "@Drafter"
+        - "draft"
+        - "revise draft"
+    provider:
+      runtime: "switch-agent-protocol"
+      transport: "sse+http"
+      sseEndpoint: "http://localhost:3000/api/stream"
+      httpCallback: "http://localhost:3000/api/agent/draft"
+      model: "claude-3-7-sonnet / codex"
+    permissions:
+      roomStateRead: true
+      roomStateWrite:
+        - draft
+        - decisions
+    instructions: |
+      You are @Drafter operating inside Switch `#grant-room`.
+      1. Write proposal narratives strictly grounded in provided evidence [E1-E8].
+      2. If any fact or statistic lacks immediate proof, tag it explicitly as [GAP].
+      3. Obey word count limits for each section.
+      4. Post draft updates to `POST /api/agent/draft` and hand off to @Checker.
+
+  # ----------------------------------------------------------------------------
+  # 3. DETERMINISTIC CHECKER TOOL (Checker)
+  # ----------------------------------------------------------------------------
+  - id: "checker-tool"
+    name: "Checker"
+    role: "Deterministic Audit & Compliance Engine"
+    description: "Zero-LLM deterministic program verifying citations, unverified claims, attachments, and word limits."
+    addressing:
+      mode: "system"
+      triggers:
+        - "EVENT:DRAFT_UPDATED"
+        - "@Checker verify"
+    provider:
+      runtime: "deterministic-engine"
+      transport: "local-lib"
+      endpoint: "lib/checker.ts"
+    permissions:
+      roomStateRead: true
+      roomStateWrite:
+        - audit-problems
+        - checklist-status
+    instructions: |
+      Deterministic engine with NO LLM. Runs deterministic regex and set logic:
+      - Validates every [E#] citation against the evidence database.
+      - Flags numbers and claims missing citations or [GAP] markers.
+      - Enforces word count limits and file attachment presence.
+
+  # ----------------------------------------------------------------------------
+  # 4. REVIEWER AGENT (Reviewer)
+  # ----------------------------------------------------------------------------
+  - id: "reviewer-agent"
+    name: "Reviewer"
+    role: "Funder Rubric Evaluator"
+    description: "Scores grant draft against funder rubric (Need 30, Approach 30, Capacity 20, Budget 20)."
+    addressing:
+      mode: "owner-agents"
+      allowedSenders:
+        - "checker-tool"
+        - "drafter-agent"
+      triggers:
+        - "@Reviewer"
+        - "score draft"
+    provider:
+      runtime: "switch-agent-protocol"
+      transport: "sse+http"
+      sseEndpoint: "http://localhost:3000/api/stream"
+      httpCallback: "http://localhost:3000/api/agent/review"
+      model: "claude-3-7-sonnet / gpt-4o"
+    permissions:
+      roomStateRead: true
+      roomStateWrite:
+        - rubric
+        - decisions
+    instructions: |
+      You are @Reviewer operating inside Switch `#grant-room`.
+      1. Score each category according to funder rubric weights: Need (30), Approach (30), Capacity (20), Budget (20).
+      2. List remaining problems and notify the human Approver.
+      3. Note: You CANNOT approve the grant. Only the human Approver can sign off.
+
+  # ----------------------------------------------------------------------------
+  # 5. HUMAN APPROVER GATE (Approver)
+  # ----------------------------------------------------------------------------
+  - id: "human-approver"
+    name: "You (approver)"
+    role: "Executive Sign-Off Authority"
+    description: "Designated human approver who resolves audit fixes and executes final legal sign-off."
+    addressing:
+      mode: "anyone"
+    permissions:
+      humanApprovalGate:
+        requiredFor:
+          - "grant.final_signoff"
+        endpoint: "/api/approve"
+        enforcement: "server-side-409"
+
+kickoff: |
+  @Analyst and @Drafter: Welcome to Switch #grant-room.
+  Maya has uploaded the grant RFP and proof records.
+  The client communicates through @Analyst only.
+  All claims must cite evidence [E#]. Only the human Approver can sign off.
