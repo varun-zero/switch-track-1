@@ -10,10 +10,6 @@ params:
   bridge:
     type: bridge
     default: [Discord, Mattermost, $first]
-  provider:
-    type: provider
-    default: [opencode, claude, codex]
-    input: advanced
   app_url:
     type: string
     label: Signoff website address
@@ -33,7 +29,7 @@ agents:
   - name: signoff-analyst
     display_name: Signoff Analyst
     description: Reads the grant rules and builds the requirements checklist.
-    provider: "{provider}"
+    provider: opencode
     location: local
     directory: "{$agents_dir}/signoff-analyst"
     addressing: anyone
@@ -46,7 +42,7 @@ agents:
          or "Not attached"), and status (ok, gap or miss).
       2. Save the list: write a JSON file with the fields agentName
          ("Signoff Analyst") and requirements (the list), then run:
-         curl -s -X POST {app_url}/api/agent/requirements -H "Authorization: Bearer {agent_token}" -H "Content-Type: application/json" -d @requirements.json
+         curl -s -X POST http://localhost:3000/api/agent/requirements -H "Authorization: Bearer switch-agent-secret-token" -H "Content-Type: application/json" -d @requirements.json
          On Windows PowerShell use curl.exe instead of curl.
       3. If something required is missing (for example audited financials),
          tell the Approver in the room and ask for a decision. Do not guess.
@@ -57,46 +53,47 @@ agents:
   - name: signoff-drafter
     display_name: Signoff Drafter
     description: Writes the application with a source for every fact.
-    provider: "{provider}"
+    provider: opencode
     location: local
     directory: "{$agents_dir}/signoff-drafter"
     addressing: owner-agents
     allow_existing: true
     instructions: |
       You are the Drafter. Use simple English.
-      Read the evidence list: curl -s {app_url}/api/state
+      Read the evidence list: curl -s http://localhost:3000/api/state
       Write each section using ONLY facts from that evidence. After every
       fact add its source like [E4]. If proof is missing, write [GAP: what is
       missing]. Never invent numbers. Respect each section's word limit.
       Save the draft: write a JSON file with agentName ("Signoff Drafter")
       and draft (a list of sections with id, title, maxWords, content), then run:
-      curl -s -X POST {app_url}/api/agent/draft -H "Authorization: Bearer {agent_token}" -H "Content-Type: application/json" -d @draft.json
+      curl -s -X POST http://localhost:3000/api/agent/draft -H "Authorization: Bearer switch-agent-secret-token" -H "Content-Type: application/json" -d @draft.json
       When done, tell the Approver the draft is ready and ask them to wake
       @signoff-reviewer. You cannot approve your own work.
 
   - name: signoff-reviewer
     display_name: Signoff Reviewer
     description: Scores the draft with the scoring guide. Cannot approve.
-    provider: "{provider}"
+    provider: opencode
     location: local
     directory: "{$agents_dir}/signoff-reviewer"
     addressing: owner
     allow_existing: true
     instructions: |
       You are the Reviewer. Use simple English.
-      Read the draft and the checker's problems: curl -s {app_url}/api/state
+      Read the draft and the checker's problems: curl -s http://localhost:3000/api/state
       Score four parts: Need (max 30), Approach (max 30), Capacity (max 20),
       Budget (max 20). Be honest. Lower the score for claims with no source.
       Save the scores: write a JSON file with agentName ("Signoff Reviewer")
       and rubricScores (a list of name, score, max), then run:
-      curl -s -X POST {app_url}/api/agent/review -H "Authorization: Bearer {agent_token}" -H "Content-Type: application/json" -d @review.json
+      curl -s -X POST http://localhost:3000/api/agent/review -H "Authorization: Bearer switch-agent-secret-token" -H "Content-Type: application/json" -d @review.json
       Report the total and the problems to the Approver. Do not edit the
       draft. Do not approve. Only the Approver signs off, on the website's
       Sign off page.
 
 rooms:
   - name: "grant-room"
-    bridge: "{bridge}"
+    description: One room where the agents and people prepare a grant application.
+    bridge: "Mattermost"
     channel_type: channel_private
     instructions: |
       This room prepares one grant application.
