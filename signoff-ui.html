@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Signoff</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#000;--panel:#0b0b0b;--tx:#fff;--mu:#9db8b1;--line:#3ee6c4;--soft:#16302b;--tint:#0c2420;--p:#00d4b4;--r:#b6ff4d;--ok:#3ddc97;--am:#ffb020;--bad:#ff5a5a;--g:linear-gradient(135deg,#00d4b4,#b6ff4d);--gt:linear-gradient(135deg,#00d4b4,#b6ff4d);color-scheme:dark}
+@media(prefers-color-scheme:light){:root:not([data-theme=dark]){--bg:#fff;--panel:#f2faf8;--tx:#10201c;--mu:#4f6b64;--soft:#cfe6e0;--tint:#e4f6f1;--line:#0b8f7a;--p:#0b8f7a;--r:#5f9a00;--ok:#0e8f5c;--am:#a86400;--bad:#d02525;--gt:linear-gradient(135deg,#0b8f7a,#5f9a00);color-scheme:light}}
+:root[data-theme=light]{--bg:#fff;--panel:#f2faf8;--tx:#10201c;--mu:#4f6b64;--soft:#cfe6e0;--tint:#e4f6f1;--line:#0b8f7a;--p:#0b8f7a;--r:#5f9a00;--ok:#0e8f5c;--am:#a86400;--bad:#d02525;--gt:linear-gradient(135deg,#0b8f7a,#5f9a00);color-scheme:light}
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:400 16px/1.55 Inter,system-ui,sans-serif}
+h1,h2,h3,.brand{font-family:Sora,Inter,system-ui,sans-serif;margin:0;letter-spacing:-.02em}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+nav{border-right:1px solid var(--soft);padding:24px 16px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px}
+.brand{font-weight:800;font-size:22px;margin:0 8px 18px;display:flex;align-items:center;gap:10px}
+.brand i{width:22px;height:22px;background:var(--g)}
+nav button{all:unset;cursor:pointer;padding:10px 12px;border-radius:0;color:var(--mu);font-weight:500;border:1px solid transparent}
+nav button:hover{color:var(--tx);border-color:var(--soft)}
+nav button.on{background:var(--g);color:#14000a;font-weight:600}
+nav button:focus-visible,.btn:focus-visible,input:focus-visible{outline:2px solid var(--p);outline-offset:2px}
+nav .who{margin-top:auto;font-size:13px;color:var(--mu);padding:12px;border:1px solid var(--soft);border-radius:0;}
+main{position:relative;z-index:1;padding:40px clamp(18px,4vw,56px) 80px;max-width:1480px;width:100%;margin:0 auto}
+.what{color:var(--mu);max-width:60ch;margin:8px 0 28px}
+h1{font-size:clamp(30px,5vw,52px);line-height:1.05;font-weight:800;max-width:16ch}
+h2{font-size:26px;font-weight:700}
+.hero{display:grid;grid-template-columns:1.25fr 1fr;gap:36px;align-items:end;padding:8px 0 4px}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding-bottom:6px}
+.fact{border:2px solid var(--line);background:var(--panel);padding:16px 14px;box-shadow:5px 5px 0 var(--p)}
+.fact b{display:block;font:800 clamp(40px,4.4vw,60px)/1 Sora,sans-serif;background:var(--gt);-webkit-background-clip:text;background-clip:text;color:transparent}
+.fact span{display:block;color:var(--mu);font-size:14px;margin-top:6px}
+.btn{all:unset;cursor:pointer;background:var(--g);color:#14000a;font-weight:600;padding:11px 20px;border-radius:0;box-shadow:4px 4px 0 var(--p)}
+.btn.ghost{background:none;color:var(--tx);border:1px solid var(--line);box-shadow:none}
+.btn[aria-disabled=true]{opacity:.4;cursor:not-allowed;box-shadow:none}
+.bridge{margin:24px 0 -6px}.bridge h2{font-size:26px}.bridge p{color:var(--mu);max-width:66ch;margin:8px 0 14px}.legend{display:flex;flex-wrap:wrap;gap:10px 26px;font-size:14px;color:var(--mu)}.legend .tag{margin-right:8px}
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:22px 30px;margin:26px 0}
+.step{position:relative;border:2px solid var(--soft);background:var(--panel);border-radius:0;padding:14px 14px 16px;transition:border-color .4s,background .4s}
+.step.on{border-color:var(--line);background:var(--tint);box-shadow:6px 6px 0 var(--r)}
+.num{width:44px;height:44px;display:grid;place-items:center;font:800 22px Sora,sans-serif;border:2px solid var(--line);color:var(--mu);margin-bottom:10px;transition:.4s}
+.step.on .num{background:var(--g);color:#14000a;border-color:transparent}
+.step:not(:nth-child(4n))::after{content:"";position:absolute;right:-30px;top:44px;width:30px;border-top:1px solid var(--line)}
+.step:not(:nth-child(4n))::before{content:"";position:absolute;right:-32px;top:40px;border:4px solid transparent;border-left:7px solid var(--line)}
+.step h3{font-size:15px;font-weight:700;margin:6px 0 4px}
+.step p{margin:0;font-size:13.5px;color:var(--mu)}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:0;border:1px solid var(--line);color:var(--tx)}
+.tag.you{background:var(--g);color:#14000a;border-color:transparent}
+.why{border:2px solid var(--soft);border-radius:0;padding:20px 22px;background:var(--panel)}
+.why ul{margin:10px 0 0;padding-left:20px;color:var(--mu)}.why li{margin:4px 0}
+.card{border:2px solid var(--soft);background:var(--panel);border-radius:0;padding:18px 20px;margin-bottom:16px}
+.card h3{font-size:17px;margin-bottom:6px;display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.card h3 small{font:500 13px Inter,sans-serif;color:var(--mu)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:620px}
+th{text-align:left;font-weight:600;color:var(--mu);font-size:13px;padding:8px 12px;border-bottom:1px solid var(--line)}
+td{padding:12px;border-bottom:1px solid var(--soft);vertical-align:top;font-size:15px}
+.pill{display:inline-block;padding:2px 10px;border-radius:0;font-size:13px;font-weight:600;border:1px solid}
+.ok{color:var(--ok)}.gap{color:var(--am)}.miss{color:var(--bad)}
+.cite{border:1px solid var(--line);border-radius:0;padding:0 6px;font-size:13px;white-space:nowrap}
+.gapm{background:rgba(255,176,32,.18);color:var(--am);border-radius:0;padding:0 6px;font-weight:600}
+.bad{text-decoration:underline wavy var(--bad);text-underline-offset:4px}
+.big{font:800 clamp(64px,12vw,120px)/1 Sora,sans-serif;background:var(--gt);-webkit-background-clip:text;background-clip:text;color:transparent}
+.bar{height:10px;border-radius:0;background:var(--soft);overflow:hidden;margin:8px 0 4px}.bar b{display:block;height:100%;background:var(--g);border-radius:0;}
+.rows{display:grid;gap:14px}
+label.chk{display:flex;gap:10px;align-items:flex-start;padding:10px 0;cursor:pointer}
+input[type=checkbox]{width:20px;height:20px;accent-color:#00d4b4;margin-top:2px}
+.log{list-style:none;margin:0;padding:0}.log li{padding:10px 0 10px 18px;border-left:2px solid var(--line);margin-left:6px;position:relative}
+.log li::before{content:"";position:absolute;left:-6px;top:17px;width:10px;height:10px;background:var(--g);border-radius:0;}
+.log small{color:var(--mu);display:block}
+#scene .a{color:var(--p)}#scene .l{color:var(--r)}#scene .d{color:var(--mu);opacity:.6}#scene .x{color:var(--bad)}#scene .w{color:var(--tx)}
+#scene{margin:0 auto;font:clamp(13px,1.65vw,21px)/1.18 ui-monospace,Menlo,Consolas,monospace;white-space:pre;color:var(--p);letter-spacing:.01em;display:block}
+.scenebox{border:2px solid var(--soft);background:var(--panel);box-shadow:6px 6px 0 var(--r);padding:24px 20px;margin:36px 0 24px;display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,390px);gap:20px 32px;align-items:center;overflow-x:auto}
+.scenebox h2{grid-column:1/-1}.sl{display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;min-width:0;width:100%}
+.room{border:2px solid var(--line);background:var(--bg);display:flex;flex-direction:column;min-width:0;width:100%}
+.rh{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:2px solid var(--soft);font:700 15px Sora,sans-serif}
+.sw{display:flex;align-items:center;gap:8px;font:500 12px Inter,sans-serif;color:var(--mu)}.sw i{display:block;width:34px;height:18px;border:2px solid var(--line);position:relative}.sw i::after{content:'';position:absolute;right:1px;top:1px;width:11px;height:11px;background:var(--g)}
+.mem{display:flex;flex-wrap:wrap;gap:6px 10px;padding:10px 12px;border-bottom:2px solid var(--soft)}
+.m{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--mu);padding:2px 6px 2px 2px;border:2px solid transparent}.m.on{border-color:var(--r);color:var(--tx)}
+.av{flex:none;width:26px;height:26px;display:grid;place-items:center;font:700 12px Sora,sans-serif;border:2px solid var(--line);color:var(--tx)}.av.ag{background:var(--g);color:#14000a;border-color:transparent}
+.msgs{display:flex;flex-direction:column;justify-content:flex-end;gap:10px;padding:12px 14px;height:240px;overflow:hidden}
+.msg{display:flex;gap:10px}.msg .b{font-size:13.5px;line-height:1.35}.msg b{font-weight:700;margin-right:6px}.msg .t{font-size:11px;font-weight:600;border:1px solid var(--line);padding:0 5px}
+.msg.new{animation:pop .35s ease-out}.at{color:var(--p);font-weight:600}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.rules{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 12px;border-top:2px solid var(--soft);font-size:11.5px;color:var(--mu)}
+.scenebox h2{font-size:20px}
+#toast{box-shadow:4px 4px 0 var(--p);position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,40px);background:var(--g);color:#14000a;font-weight:600;padding:12px 20px;border-radius:0;opacity:0;transition:.3s;pointer-events:none}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:1100px){.hero{grid-template-columns:1fr}.scenebox{grid-template-columns:1fr}#scene{font-size:clamp(9px,1.9vw,16px)}}
+@media(max-width:900px){.app{grid-template-columns:1fr}nav{position:static;height:auto;flex-direction:row;flex-wrap:wrap;border-right:0;border-bottom:1px solid var(--soft);padding:14px}.brand{width:100%;margin:0 0 6px}nav .who{display:none}.flow{grid-template-columns:1fr 1fr}.step::before,.step::after{display:none!important}.hero svg.deco{opacity:.35}}
+@media(max-width:560px){.flow{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#b6ff4d"/><stop offset="1" stop-color="#00d4b4"/></linearGradient></defs></svg>
+<div class="app">
+  <nav id="nav" aria-label="Pages"></nav>
+  <main id="main"></main>
+</div>
+<div id="toast" role="status"></div>
+<script>
+const PAGES=[["how","How it works"],["list","Checklist"],["draft","Draft"],["score","Score"],["sign","Sign off"]];
+const STEPS=[
+["You add the document","You","Drop the grant rules and your proof files into a chat room."],
+["Switch sets up two rooms","Switch","One private room for the client. One for the team."],
+["Analyst agent makes a checklist","AI agent","It reads the rules and lists everything the application needs."],
+["You make the key call","You","If something is missing, a person decides. Agents can’t."],
+["Drafter agent writes","AI agent","It writes each section and shows where every fact came from."],
+["Automatic checker runs","Plain program","A normal program, not AI, checks sources, word limits and files."],
+["Reviewer agent scores","AI agent","It gives a score out of 100 and lists problems. It can’t approve."],
+["You sign off","You","You approve. The final file is saved and the room keeps the record."]];
+const MEM=[['M','Maya (client)',''],['Y','You (approver)',''],['A','Analyst','ag'],['D','Drafter','ag'],['R','Reviewer','ag'],['C','Checker','ag']].map(m=>[m[0],m[1],0,m[2]]);
+const CHAT=[[0,'M','Maya','','','@Analyst here are the grant rules and our proof files.'],[.4,'A','Analyst','AGENT','ag','@You I made the checklist. One problem: audited financials are required, but we only have a sponsor letter.'],[.75,'Y','You','','','Use the sponsor’s audit (E7). Go ahead.'],[1.5,'D','Drafter','AGENT','ag','@Checker the draft is ready. Two spots are marked as gaps.'],[2.5,'C','Checker','TOOL','ag','Found 1 claim with no source: the graduate pay line.'],[2.72,'D','Drafter','AGENT','ag','Fixed. I added the source.'],[3.55,'R','Reviewer','AGENT','ag','@You the score is 78 out of 100. I can’t approve. That is your call.'],[4.72,'Y','You','','','Approved. Thank you all.']];
+const LOG=[["Analyst agent","Found a problem: audited financials are required, but only a sponsor letter was uploaded.","Nov 4, 10:12"],["You (Approver)","Decided to use the fiscal sponsor’s audit (E7).","Nov 4, 10:20"],["Reviewer agent","Scored the draft 78 out of 100. Found 2 problems.","Nov 4, 11:05"]];
+const $=s=>document.querySelector(s);
+let timers=[],signed=false;
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2600)}
+function play(){timers.forEach(clearTimeout);timers=[];const els=[...document.querySelectorAll('.step')];els.forEach(e=>e.classList.remove('on'));
+ const rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+ els.forEach((e,i)=>timers.push(setTimeout(()=>e.classList.add('on'),rm?0:300+i*800)))}
+const views={
+how:()=>`<div class="hero"><h1>Three AI helpers do the paperwork. You make the call.</h1><div class="facts"><div class="fact"><b>3</b><span>AI helpers, each with one job</span></div><div class="fact"><b>1</b><span>automatic checker for sources and limits</span></div><div class="fact"><b>1</b><span>person who approves</span></div></div></div>
+<p class="what">What is this? Signoff helps a small team finish a grant application. Follow the steps below to see who does what.</p>
+<div class="bridge"><h2>Now, step by step</h2><p>The animation showed 5 stops. Here is the full story in 8 steps, including the setup and who does each part. Steps tagged “You” need a person. Agents can’t do them.</p><div class="legend"><span><span class="tag you">You</span>a person decides</span><span><span class="tag">AI agent</span>AI does the work</span><span><span class="tag">Plain program</span>normal code, no AI</span><span><span class="tag">Switch</span>the chat rooms</span></div></div>
+<div class="flow">${STEPS.map((s,i)=>`<div class="step"><div class="num">${i+1}</div><span class="tag ${s[1]=='You'?'you':''}">${s[1]}</span><h3>${s[0]}</h3><p>${s[2]}</p></div>`).join('')}</div>
+<div class="scenebox"><h2>Watch one document go through</h2><div class="sl"><pre id="scene" aria-hidden="true"></pre><p id="scap" style="margin:0;font-weight:500;min-height:3.2em;text-align:center;width:100%"></p></div><div class="room"><div class="rh"><span># grant-room</span><span class="sw"><i></i>Switch on</span></div><div class="mem">${MEM.map(m=>`<div class="m" data-id="${m[0]}"><div class="av ${m[3]}">${m[0]}</div>${m[1]}</div>`).join('')}</div><div id="msgs" class="msgs"></div><div class="rules"><span>The client talks to the Analyst only.</span><span>Only you can approve.</span><span>Every decision is saved.</span></div></div></div>
+<div class="why"><h2>Why use Switch?</h2><ul><li>Each agent has its own job and its own permissions.</li><li>The room keeps a record of who decided what.</li><li>Without Switch, anyone could skip a step.</li></ul></div>`,
+list:()=>`<h1>Requirements checklist</h1><p class="what">What is this? The Analyst agent read the funder’s rules and listed everything the application needs. Each row shows if we have proof.</p>
+<div class="card scroll"><table><thead><tr><th>#</th><th>What the funder wants</th><th>Required?</th><th>Our proof</th><th>Status</th></tr></thead><tbody>${[
+["Nonprofit status letter","Yes","E1 Status letter","ok","Done"],["Serves the funder’s region","Yes","E2 Annual report","ok","Done"],["Audited financial report","Yes","E7 Sponsor’s audit (you chose this)","ok","Done"],["Project summary, 2 pages","Yes","Draft, section 1","ok","Done"],["Results from last year","Yes","E4 Results file, one number has no source","gap","Needs a fix"],["Budget, overhead under 15%","Yes","E5 Budget sheet","ok","Done"],["Two letters of support","No","E8 Letters","ok","Done"],["List of board members","Yes","Not attached","miss","Missing"]].map((r,i)=>`<tr><td>${i+1}</td><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td><span class="pill ${r[3]}">${r[4]}</span></td></tr>`).join('')}</tbody></table></div>`,
+draft:()=>`<h1>The draft</h1><p class="what">What is this? The Drafter agent wrote the application. Tags like <span class="cite">E4</span> show the source of a fact. <span class="gapm">GAP</span> means the proof is missing. The automatic checker marks claims with no source.</p>
+<div class="card"><h3>Why we need this <small>410 of 500 words</small></h3><p>Last year, 1,200 job seekers came to us for help <span class="cite">E4</span>. Most live in the three counties this fund serves <span class="cite">E2</span>. <span class="bad" title="No source for this claim">Our graduates earned 30% more within a year.</span></p></div>
+<div class="card"><h3>Our plan <small>470 of 500 words</small></h3><p>We run 12-week courses with local employers <span class="cite">E3</span>. We work with <span class="gapm">GAP: number of employer partners</span> companies. Every student gets a coach.</p></div>
+<div class="card"><h3>Our team <small>260 of 300 words</small></h3><p>Nine staff run the program <span class="cite">E6</span>. Our fiscal sponsor audits the accounts every year <span class="cite">E7</span>.</p></div>`,
+score:()=>`<h1>Review score</h1><p class="what">What is this? The Reviewer agent scored the draft with the funder’s scoring guide. It can only report. It can’t approve.</p>
+<div class="big">78<span style="font-size:.35em">/100</span></div>
+<div class="rows" style="margin:22px 0">${[["Need",24,30],["Approach",23,30],["Capacity",16,20],["Budget",15,20]].map(r=>`<div><b>${r[0]}</b> <span style="color:var(--mu)">${r[1]} of ${r[2]}</span><div class="bar"><b style="width:${r[1]/r[2]*100}%"></b></div></div>`).join('')}</div>
+<div class="card"><h3>Problems found</h3><p>1. One claim about graduate pay has no source.<br>2. The board member list is not attached.<br>3. Two spots still say GAP.</p></div>`,
+sign:()=>`<h1>Sign off</h1><p class="what">What is this? Only you, the Approver, can approve. Agents can’t. Fix the two problems, then approve.</p>
+<div class="card"><h3>Before you approve</h3><label class="chk"><input type="checkbox" class="fx"> I added a source for the graduate pay claim.</label><label class="chk"><input type="checkbox" class="fx"> I attached the board member list.</label>
+<button class="btn" id="appr" aria-disabled="true">Approve and save final file</button></div>
+<div class="card"><h3>Who decided what</h3><ul class="log" id="log"></ul></div>`};
+function logHtml(){return LOG.map(l=>`<li><b>${l[0]}</b> ${l[1]}<small>${l[2]}</small></li>`).join('')}
+let fl;
+const SW=60,SH=15;
+function sceneFrame(t){const g=[],c=[];for(let y=0;y<SH;y++){g.push(Array(SW).fill(' '));c.push(Array(SW).fill('d'))}
+const put=(y,x,str,cl)=>{for(let i=0;i<str.length;i++){const xx=x+i;if(y>=0&&y<SH&&xx>=0&&xx<SW&&str[i]!==' '){g[y][xx]=str[i];c[y][xx]=cl}}};
+const tt=t%13,run=tt<11,s=run?Math.min(4,Math.floor(tt/2.2)):4,f=run?(tt%2.2)/2.2:1;
+const ease=x=>x*x*(3-2*x),mv=f<.36?ease(f/.36):1,cen=i=>i*12+5,from=s==0?-6:cen(s-1),cx=from+(cen(s)-from)*mv;
+const k=s<4?s+(f>(s==2?.72:.55)?1:0):4+(f>.7?1:0),bl=(t%3.2)<.15,pr=s==4&&run&&f>.5&&f<=.7,ct=run&&s==2&&f>.5&&f<=.72;
+const names=['READ','WRITE','CHECK','SCORE','YOU'],who=['AI','AI','tool','AI','YOU'];
+const faces=[[bl?'[-_-]':'[o_o]','[*_*]'],[bl?'[-_-]':'[o_o]','[*_*]'],['[=_=]','[#:#]'],[bl?'[-_-]':'[o_o]','[*_*]'],['(^_^)','(^o^)']];
+for(let i=0;i<5;i++){const x=i*12,on=run&&s==i&&f>.36,b=on?'=':'-',cl=on?(ct&&i==2?'x':'l'):'d',fc=ct&&i==2?'[!_!]':faces[i][on?1:0],nm=names[i].padStart(Math.floor((8+names[i].length)/2)).padEnd(8);
+ put(0,x,'.'+b.repeat(8)+'.',cl);put(1,x,'|',cl);put(1,x+1,' '+fc+'  ',on?(ct&&i==2?'x':'l'):'a');put(1,x+9,'|',cl);
+ put(2,x,'|',cl);put(2,x+1,nm,'w');put(2,x+9,'|',cl);put(3,x,"'"+b.repeat(3)+'||'+b.repeat(3)+"'",cl);
+ put(4,x+4,'||','d');put(11,x+4,'/\\','d');put(12,x+5-Math.floor(who[i].length/2),who[i],i==4?'l':'a')}
+let x0=Math.round(cx)-3,body=[['~~~~','~~~~'],['[x] ','[x] '],['====','===='],['==v=','==v='],['78  ','/100'],['APPR','OVED']][k];
+if(ct)body=['=!==','=!=='];put(6,x0,'.----.','w');put(7,x0,'|','w');put(7,x0+1,body[0],ct?'x':k==5?'l':'a');put(7,x0+5,'|','w');
+put(8,x0,'|','w');put(8,x0+1,body[1],ct?'x':k==5?'l':'a');put(8,x0+5,'|','w');put(9,x0,"'----'",'w');
+const fl=Math.floor(t*12);
+if(run&&f>.36&&s<4)for(let j=0;j<6;j++)put(5,x0+j,(ct?[' ','!','.']:[' ',':','.'])[(j*7+fl)%3],ct?'x':'l');
+if(pr)put(5,x0,'[####]','l'),put(5,x0-1,'\\','l'),put(5,x0+6,'/','l');
+if(s==4&&k==5)put(5,x0-1,fl%2?'*':'+','l'),put(5,x0+6,fl%2?'+':'*','l');
+const off=Math.round(cx);for(let x=0;x<SW;x++)put(10,x,((x-off)%6+6)%6==0?'o':'=','d');
+const n=Math.round(k/5*20);put(13,11,'progress [','d');put(13,21,'#'.repeat(n),'l');put(13,21+n,'.'.repeat(20-n),'d');put(13,41,'] '+k+' of 5','d');
+let cap;if(!run)cap='Approved. The room saves who decided what.';else if(f<.36)cap=s==0?'A new document arrives.':'Moving to the next step…';
+else cap=['Analyst agent reads the rules and makes a checklist.','Drafter agent writes the answers and adds sources.',f<.5?'The automatic checker looks for missing sources and files.':f<.72?'Problem found: one claim has no source. It goes back to the drafter.':'Fixed. The checker passes it.','Reviewer agent scores the draft out of 100.',f<.7?'You check it and press the stamp.':'Approved. The room saves who decided what.'][s];
+const esc=ch=>ch=='&'?'&amp;':ch=='<'?'&lt;':ch=='>'?'&gt;':ch;
+const html=g.map((row,y)=>{let o='',cur='',buf='';for(let x=0;x<SW;x++){if(c[y][x]!==cur&&buf){o+=`<span class="${cur}">${buf}</span>`;buf=''}cur=c[y][x];buf+=esc(row[x])}return o+`<span class="${cur}">${buf}</span>`}).join('\n');
+return{html,cap,q:run?s+f:5}}
+function startScene(){clearInterval(fl);const el=$('#scene'),cp=$('#scap');if(!el)return;let last='',ln=-1;
+ const chat=q=>{const v=CHAT.filter(m=>q>=m[0]),n=v.length;if(n===ln)return;ln=n;const L=v[n-1];
+  $('#msgs').innerHTML=v.slice(-5).map(m=>`<div class="msg${m===L?' new':''}"><div class="av ${m[4]}">${m[1]}</div><div class="b"><b>${m[2]}</b>${m[3]?`<span class="t">${m[3]}</span>`:''}<br>${m[5].replace(/@(\w+)/g,'<span class="at">@$1</span>')}</div></div>`).join('');
+  document.querySelectorAll('.m').forEach(e=>e.classList.toggle('on',!!L&&e.dataset.id==L[1]))};
+ const draw=t=>{const r=sceneFrame(t);el.innerHTML=r.html;chat(r.q);if(r.cap!==last){cp.textContent=r.cap;last=r.cap}};
+ if(matchMedia('(prefers-reduced-motion:reduce)').matches){draw(12);return}
+ const t0=Date.now();draw(0);fl=setInterval(()=>draw((Date.now()-t0)/1000),70)}
+function show(id){clearInterval(fl);if(!views[id])id='how';timers.forEach(clearTimeout);
+ $('#nav').innerHTML='<div class="brand"><i></i>Signoff</div>'+PAGES.map(p=>`<button data-p="${p[0]}" class="${p[0]==id?'on':''}">${p[1]}</button>`).join('')+'<div class="who">Signed in as the Approver</div>';
+ $('#main').innerHTML=views[id]();
+ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{location.hash=b.dataset.p});
+ if(id=='how'){play();startScene()}
+ if(id=='sign'){const L=$('#log');L.innerHTML=logHtml();const a=$('#appr'),fx=[...document.querySelectorAll('.fx')];
+  if(signed){a.textContent='Approved';a.setAttribute('aria-disabled','true');fx.forEach(f=>{f.checked=true;f.disabled=true})}
+  const upd=()=>{if(!signed)a.setAttribute('aria-disabled',String(!fx.every(f=>f.checked)))};fx.forEach(f=>f.onchange=upd);
+  a.onclick=()=>{if(a.getAttribute('aria-disabled')=='true'){if(!signed)toast('Fix both problems first.');return}
+   signed=true;LOG.push(["You (Approver)","Approved the application. Final file saved.",new Date().toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})]);
+   L.innerHTML=logHtml();a.textContent='Approved';a.setAttribute('aria-disabled','true');fx.forEach(f=>f.disabled=true);toast('Approved. Final file saved.')}}}
+addEventListener('hashchange',()=>show(location.hash.slice(1)));
+show(location.hash.slice(1));
+</script>
+</body>
+</html>
